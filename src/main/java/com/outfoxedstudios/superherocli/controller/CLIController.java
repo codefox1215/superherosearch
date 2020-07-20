@@ -21,11 +21,22 @@ public class CLIController {
 
         boolean done;
 
+        main_loop:
         do {
             boolean searchError;
+
+            // reset values
+            currentInput = "";
+            currentResults = null;
+
             do {
+                // reset error flag
                 searchError = false;
+
+                // display search prompt
                 promptSearchQuery();
+
+                // search api for results
                 try {
                     currentResults = heroInfoController.search(currentInput);
                 } catch (APISearchException e) {
@@ -34,18 +45,39 @@ public class CLIController {
                 }
             } while (searchError);
 
-            int selectedResultIndex = 0;
-            if(currentResults.getResults().size() > 0) {
-                selectedResultIndex = displayResultsOptions();
-                if(isGoBackSelection(selectedResultIndex)) {
-                    done = false;
-                    continue;
+            boolean resultsDone = false;
+
+            results_loop:
+            do {
+
+                int selectedResultIndex = 0;
+                if (currentResults.getResults().size() > 0) {
+                    selectedResultIndex = displayResultsOptions();
+                    if (isGoBackSelection(selectedResultIndex)) {
+                        done = false;
+                        continue main_loop;
+                    }
+                    if (isExitSelection(selectedResultIndex)) {
+                        exitCLI();
+                    }
                 }
-                if(isExitSelection(selectedResultIndex)) {
-                    exitCLI();
+                displayHeroInformation(currentResults.getResults().get(selectedResultIndex));
+
+                int nextSelection = displayNewSearchOption();
+
+                switch (nextSelection) {
+                    case 1:
+                        resultsDone = false;
+                        continue results_loop;
+                    case 2:
+                        done = false;
+                        continue main_loop;
+                    case 3:
+                        exitCLI();
+                        break;
+                    default:
                 }
-            }
-            displayHeroInformation(currentResults.getResults().get(selectedResultIndex));
+            } while(!resultsDone);
 
             done = true; // TODO: setup loop for multiple searches
         } while(!done);
@@ -105,6 +137,22 @@ public class CLIController {
 
     private void displayHeroInformation(Hero hero) {
         CLILogger.output(hero.toString());
+    }
+
+    private int displayNewSearchOption() {
+        do {
+            CLILogger.output("Would you like to search again?");
+            CLILogger.output("[1] Go back to search results");
+            CLILogger.output("[2] New Search]");
+            CLILogger.output("[3] Exit]");
+            String input = inputScanner.next().trim();
+
+            int selection = Integer.parseInt(input);
+
+            if (selection > 0 && selection <= 3) {
+                return selection;
+            }
+        } while(true);
     }
 
     private boolean isGoBackSelection(int selectionIndex) {
