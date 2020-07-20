@@ -18,7 +18,7 @@ public class Biography {
     String       alignment;
 
     public String getFullName() {
-        return fullName;
+        return fullName.equals("-") ? "N/A" : fullName;
     }
 
     public List<String> getAlterEgos() {
@@ -30,19 +30,19 @@ public class Biography {
     }
 
     public String getPlaceOfBirth() {
-        return placeOfBirth;
+        return placeOfBirth.equals("-") ? "N/A" : placeOfBirth;
     }
 
     public String getFirstAppearance() {
-        return firstAppearance;
+        return firstAppearance.equals("-") ? "N/A" : firstAppearance;
     }
 
     public String getPublisher() {
-        return publisher;
+        return publisher.equals("-") ? "N/A" : publisher;
     }
 
     public String getAlignment() {
-        return alignment;
+        return alignment.equals("-") ? "N/A" : alignment;
     }
 
     @Override
@@ -62,6 +62,10 @@ public class Biography {
     }
 
     private String formatAliasesString() {
+        if(aliases == null || aliases.isEmpty()) {
+            return "N/A";
+        }
+
         StringBuilder sb = new StringBuilder();
 
         for(String alias: getAliases()) {

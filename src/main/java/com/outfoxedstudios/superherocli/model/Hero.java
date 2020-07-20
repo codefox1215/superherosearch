@@ -8,7 +8,7 @@ public class Hero {
     Biography  biography;
     Appearance appearance;
     Work       work;
-    Connection connection;
+    Connection connections;
     Image      image;
 
     public int getId() {
@@ -35,8 +35,8 @@ public class Hero {
         return work;
     }
 
-    public Connection getConnection() {
-        return connection;
+    public Connection getConnections() {
+        return connections;
     }
 
     public Image getImage() {
@@ -77,10 +77,10 @@ public class Hero {
         }
         sb.append("\r\n");
         sb.append("\r\n");
-        if(connection == null) {
+        if(connections == null) {
             sb.append("connection => null");
         } else {
-            sb.append(connection.toString());
+            sb.append(connections.toString());
         }
 
         return sb.toString();

@@ -49,7 +49,7 @@ public class Appearance {
         sb.append("  Height:      " + getHeight()+ "\r\n");
         sb.append("  Weight:      " + getWeight() + "\r\n");
         sb.append("  Eye Color:   " + getEyeColor() + "\r\n");
-        sb.append("  Hair Color:  " + getHeight());
+        sb.append("  Hair Color:  " + getHairColor());
 
         return sb.toString();
     }

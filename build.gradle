@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'application'
+    id 'idea'
 }
 
 group 'com.outfoxedsudios'
@@ -10,7 +12,19 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.jsoup:jsoup:1.13.1'
-    implementation 'com.google.code.gson:gson:2.8.6'
+    compile 'com.google.code.gson:gson:2.8.6'
     testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+sourceSets {
+    main.java.srcDir "src/main/java"
+    main.resources.srcDir "src/main/resources"
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'com.outfoxedstudios.superherocli.SuperheroCLI',
+                'Class-Path': configurations.compile.collect { it.absolutePath }.join(" "))
+    }
 }
