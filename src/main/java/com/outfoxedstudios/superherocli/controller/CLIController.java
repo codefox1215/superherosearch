@@ -19,9 +19,9 @@ public class CLIController {
     public void run() {
         displayWelcome();
 
-        boolean done = false;
+        boolean done;
 
-        while(!done) {
+        do {
             boolean searchError;
             do {
                 searchError = false;
@@ -41,7 +41,7 @@ public class CLIController {
             displayHeroInformation(currentResults.getResults().get(selectedResultIndex));
 
             done = true; // TODO: setup loop for multiple searches
-        }
+        } while(!done);
 
     }
 
@@ -64,16 +64,29 @@ public class CLIController {
     }
 
     private int displayResultsOptions() {
-        int index = 1;
-        for(Hero hero: currentResults.getResults()) {
-            CLILogger.output("[" + index + "] " + hero.getName() + "(" + hero.getBiography().getFullName() + ")");
-            index++;
-        }
-        CLILogger.output("");
-        CLILogger.output("Who do you want info on?");
-        String inputVal = inputScanner.next();
+        boolean valid;
+        int index;
 
-        return Integer.parseInt(inputVal) - 1;
+        do {
+            valid = true;
+            index = 1;
+            for (Hero hero : currentResults.getResults()) {
+                CLILogger.output("[" + index + "] " + hero.getName() + "(" + hero.getBiography().getFullName() + ")");
+                index++;
+            }
+            CLILogger.output("");
+            CLILogger.output("Who do you want info on?");
+            String inputVal = inputScanner.next();
+            index = Integer.parseInt(inputVal);
+
+            if(index < 1 || index > currentResults.getResults().size()) {
+                valid = false;
+                CLILogger.warn("Invalid selection");
+            }
+
+        } while(!valid);
+
+        return index - 1;
     }
 
     private void displayHeroInformation(Hero hero) {
