@@ -35,8 +35,15 @@ public class CLIController {
             } while (searchError);
 
             int selectedResultIndex = 0;
-            if(currentResults.getResults().size() > 1) {
+            if(currentResults.getResults().size() > 0) {
                 selectedResultIndex = displayResultsOptions();
+                if(isGoBackSelection(selectedResultIndex)) {
+                    done = false;
+                    continue;
+                }
+                if(isExitSelection(selectedResultIndex)) {
+                    exitCLI();
+                }
             }
             displayHeroInformation(currentResults.getResults().get(selectedResultIndex));
 
@@ -74,12 +81,19 @@ public class CLIController {
                 CLILogger.output("[" + index + "] " + hero.getName() + "(" + hero.getBiography().getFullName() + ")");
                 index++;
             }
+
+            CLILogger.output("[" + index + "] Go back");
+            index++;
+
+            CLILogger.output("[" + index + "] Exit");
+
             CLILogger.output("");
             CLILogger.output("Who do you want info on?");
             String inputVal = inputScanner.next();
             index = Integer.parseInt(inputVal);
 
-            if(index < 1 || index > currentResults.getResults().size()) {
+            // Check if selection is in range of selections List<Hero> size + 2 for "Go Back"/"Exit"
+            if(index < 1 || index > currentResults.getResults().size() + 2) {
                 valid = false;
                 CLILogger.warn("Invalid selection");
             }
@@ -91,6 +105,19 @@ public class CLIController {
 
     private void displayHeroInformation(Hero hero) {
         CLILogger.output(hero.toString());
+    }
+
+    private boolean isGoBackSelection(int selectionIndex) {
+        return (selectionIndex == currentResults.getResults().size());
+    }
+
+    private boolean isExitSelection(int selectionIndex) {
+        return (selectionIndex == (currentResults.getResults().size() + 1));
+    }
+
+    private void exitCLI() {
+        CLILogger.output("Exiting...");
+        System.exit(0);
     }
 
 }
