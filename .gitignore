@@ -1,0 +1,40 @@
+*.class
+
+# Mobile Tools for Java (J2ME) #
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# Gradle temp files #
+target/
+
+# IntelliJ files #
+**/*.iml
+**/.idea
+**/.gradle
+
+# VM crash logs
+hs_err_pid*
+
+# Gradle #
+.gradle
+**/build/
+!src/**/build/
+
+# Ignore Gradle GUI config #
+gradle-app.setting
+
+# Don't ignore Gradle wrapper jar file)
+!gradle-wrapper.jar
+
+# Cache of project
+.gradletasknamechache
+
+# Project Specific #
+output/
+*.bknfo
+*.ch*
+
