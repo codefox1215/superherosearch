@@ -27,7 +27,7 @@ public class CLIController {
 
         displayWelcome();
 
-        do {
+        while(true){
             switch(currentState) {
                 case QUERY_SEARCH_TERM:
                     // ensure search results are cleared before new search query
@@ -46,7 +46,7 @@ public class CLIController {
                 default:
             }
 
-        } while(true);
+        }
 
     }
 
@@ -136,6 +136,7 @@ public class CLIController {
             searchInput = inputScanner.next().trim();
             if(searchInput.length() < minSearchTermLength) {
                 CLILogger.warn("Search term must be greater than " + minSearchTermLength + " characters");
+                valid = false;
             }
         } while (!valid);
 
