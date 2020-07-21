@@ -2,86 +2,123 @@ package com.outfoxedstudios.superherocli.controller;
 
 import com.outfoxedstudios.superherocli.config.AppProperties;
 import com.outfoxedstudios.superherocli.exception.APISearchException;
+import com.outfoxedstudios.superherocli.exception.NoResultsException;
 import com.outfoxedstudios.superherocli.logger.CLILogger;
 import com.outfoxedstudios.superherocli.model.Hero;
 import com.outfoxedstudios.superherocli.model.SearchResults;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class CLIController {
 
     private HeroInfoController heroInfoController = new HeroInfoController();
     private Scanner            inputScanner       = new Scanner(System.in);
-    private String             currentInput;
+    private CLIState           currentState;
     private SearchResults      currentResults;
+    private Hero               selectedHero;
+    private int                minSearchTermLength;
 
 
     public void run() {
+        // initialize CLI state values
+        init();
+
         displayWelcome();
 
-        boolean done;
-
-        main_loop:
         do {
-            boolean searchError;
+            switch(currentState) {
+                case QUERY_SEARCH_TERM:
+                    // ensure search results are cleared before new search query
+                    clearSearchValues();
+                    querySearchTerm();
+                    break;
+                case RESULTS_SELECTION:
+                    showResultsSelection();
+                    break;
+                case SHOW_RESULTS:
+                    showResults();
+                    break;
+                case EXIT_CLI:
+                    exitCLI();
+                    break;
+                default:
+            }
 
-            // reset values
-            currentInput = "";
-            currentResults = null;
+        } while(true);
 
-            do {
-                // reset error flag
-                searchError = false;
+    }
 
-                // display search prompt
-                promptSearchQuery();
+    private void init() {
+        setState(CLIState.QUERY_SEARCH_TERM);
+        selectedHero = null;
+        minSearchTermLength = AppProperties.getMinSearchTermLength();
+    }
 
-                // search api for results
-                try {
-                    currentResults = heroInfoController.search(currentInput);
-                } catch (APISearchException e) {
-                    CLILogger.error(e.getMessage());
-                    searchError = true;
-                }
-            } while (searchError);
+    private void querySearchTerm() {
+        // display search prompt and retrieve
+        String searchTerm = promptSearchQuery();
 
-            boolean resultsDone = false;
+        boolean success = performSearch(searchTerm);
 
-            results_loop:
-            do {
+        if(success) {
+            setState(CLIState.RESULTS_SELECTION);
+        }
+    }
 
-                int selectedResultIndex = 0;
-                if (currentResults.getResults().size() > 0) {
-                    selectedResultIndex = displayResultsOptions();
-                    if (isGoBackSelection(selectedResultIndex)) {
-                        done = false;
-                        continue main_loop;
-                    }
-                    if (isExitSelection(selectedResultIndex)) {
-                        exitCLI();
-                    }
-                }
-                displayHeroInformation(currentResults.getResults().get(selectedResultIndex));
+    private void clearSearchValues() {
+        currentResults = null;
+        selectedHero = null;
+    }
 
-                int nextSelection = displayNewSearchOption();
+    private void showResultsSelection() {
+        int selectedResultIndex = displayResultsOptions();
 
-                switch (nextSelection) {
-                    case 1:
-                        resultsDone = false;
-                        continue results_loop;
-                    case 2:
-                        done = false;
-                        continue main_loop;
-                    case 3:
-                        exitCLI();
-                        break;
-                    default:
-                }
-            } while(!resultsDone);
+        if (isGoBackSelection(selectedResultIndex)) {
+            setState(CLIState.QUERY_SEARCH_TERM);
+        } else if (isExitSelection(selectedResultIndex)) {
+            setState(CLIState.EXIT_CLI);
+        } else {
+            selectedHero = currentResults.getResults().get(selectedResultIndex);
+            setState(CLIState.SHOW_RESULTS);
+        }
+    }
 
-            done = true; // TODO: setup loop for multiple searches
-        } while(!done);
+    private void  showResults() {
+        displaySelectedHeroInformation();
 
+        int nextSelection = displayNewSearchOption();
+
+        switch (nextSelection) {
+            case 1:
+                setState(CLIState.RESULTS_SELECTION);
+                break;
+            case 2:
+                setState(CLIState.QUERY_SEARCH_TERM);
+                break;
+            case 3:
+                setState(CLIState.EXIT_CLI);
+                break;
+            default:
+        }
+    }
+
+    private boolean performSearch(String searchTerm) {
+
+        try {
+            currentResults = heroInfoController.search(searchTerm);
+        } catch(APISearchException e) {
+            CLILogger.error(e.getMessage());
+            CLILogger.output("Cannot connect to API.");
+            CLILogger.output("Check your internet connection and try again.");
+            exitCLI();
+        } catch(NoResultsException e) {
+            CLILogger.warn(e. getMessage());
+            return false;
+        }
+
+        return true;
     }
 
     private void displayWelcome() {
@@ -89,17 +126,20 @@ public class CLIController {
         CLILogger.output("");
     }
 
-    private void promptSearchQuery() {
+    private String promptSearchQuery() {
         boolean valid;
-        int minSearchTermLength = AppProperties.getMinSearchTermLength();
+        String searchInput = "";
+
         do {
             valid = true;
             CLILogger.output("What hero to you wish to search?");
-            currentInput = inputScanner.next().trim();
-            if(currentInput.length() < minSearchTermLength) {
+            searchInput = inputScanner.next().trim();
+            if(searchInput.length() < minSearchTermLength) {
                 CLILogger.warn("Search term must be greater than " + minSearchTermLength + " characters");
             }
         } while (!valid);
+
+        return searchInput;
     }
 
     private int displayResultsOptions() {
@@ -135,16 +175,16 @@ public class CLIController {
         return index - 1;
     }
 
-    private void displayHeroInformation(Hero hero) {
-        CLILogger.output(hero.toString());
+    private void displaySelectedHeroInformation() {
+        CLILogger.output(selectedHero.toString());
     }
 
     private int displayNewSearchOption() {
         do {
             CLILogger.output("Would you like to search again?");
             CLILogger.output("[1] Go back to search results");
-            CLILogger.output("[2] New Search]");
-            CLILogger.output("[3] Exit]");
+            CLILogger.output("[2] New Search");
+            CLILogger.output("[3] Exit");
             String input = inputScanner.next().trim();
 
             int selection = Integer.parseInt(input);
@@ -166,6 +206,10 @@ public class CLIController {
     private void exitCLI() {
         CLILogger.output("Exiting...");
         System.exit(0);
+    }
+
+    private void setState(CLIState state) {
+        currentState = state;
     }
 
 }

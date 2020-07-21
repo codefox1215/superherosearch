@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.outfoxedstudios.superherocli.config.AppProperties;
 import com.outfoxedstudios.superherocli.exception.APIRequestException;
 import com.outfoxedstudios.superherocli.exception.APISearchException;
+import com.outfoxedstudios.superherocli.exception.NoResultsException;
 import com.outfoxedstudios.superherocli.logger.CLILogger;
 import com.outfoxedstudios.superherocli.model.SearchResults;
 
@@ -22,7 +23,7 @@ public class HeroInfoController {
         uri = AppProperties.getApiUri() + AppProperties.getApiKey() + "/";
     }
 
-    public SearchResults search(String name) throws APISearchException {
+    public SearchResults search(String name) throws APISearchException, NoResultsException {
         name = sanitizeSearchString(name);
 
         StringBuilder response = new StringBuilder();
@@ -59,7 +60,7 @@ public class HeroInfoController {
         SearchResults results = gson.fromJson(response.toString(), SearchResults.class);
 
         if(!results.getResponse().equals("success")) {
-            throw new APISearchException(results.getError());
+            throw new NoResultsException(results.getError());
         }
 
         return results;

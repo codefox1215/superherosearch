@@ -4,10 +4,11 @@ import com.outfoxedstudios.superherocli.logger.LoggingLevel;
 
 public class AppProperties {
 
-    private final static LoggingLevel LOGGING_LEVEL =          LoggingLevel.INFO;
+    private final static LoggingLevel LOGGING_LEVEL =          LoggingLevel.WARN;
     private final static String       API_URI =                "https://superheroapi.com/api/";
     private final static String       API_KEY =                "10111121773977642";
     private final static int          MIN_SEARCH_TERM_LENGTH = 2;
+    private final static int          MAX_RETRY =              3;
 
 
     public static LoggingLevel getLoggingLevel() {
@@ -24,5 +25,9 @@ public class AppProperties {
 
     public static int getMinSearchTermLength() {
         return MIN_SEARCH_TERM_LENGTH;
+    }
+
+    public static int getMaxRetry() {
+        return MAX_RETRY;
     }
 }
